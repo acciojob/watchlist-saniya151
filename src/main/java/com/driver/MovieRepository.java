@@ -5,78 +5,78 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class MovieRepository {
-    Map<String,Movie> hm = new HashMap<>();
-    Map<String,Director> hm1 = new HashMap<>();
-    Map<String,List> hm2 = new HashMap<>();
+
+    HashMap<String,Movie> moviesDB=new HashMap<>();
+
+    HashMap<String,Director> directorsDB=new HashMap<>();
+
+    HashMap<String, List<String>> pairs=new HashMap<>();
 
     public void addMovie(Movie movie) {
-        hm.put(movie.getName(),movie);
+        moviesDB.put(movie.getName(), movie);
     }
 
     public void addDirector(Director director) {
-        hm1.put(director.getName(),director);
+        directorsDB.put(director.getName(), director);
+        directorsDB.put(director.getName(), director);
     }
 
-    public void addMovieDirectorPair(String mName, String dName) {
-        List<String> mList = new ArrayList<>();
-        List<String> dList = new ArrayList<>();
-        mList.add(dName);
-        dList.add(mName);
-
-        if(hm2.containsKey(mName))
-        {
-            hm2.get(mName).add(dName);
+    public void addMovieDirectorPair(String movieName, String directorName) {
+        if(!pairs.containsKey(directorName)){
+            List<String> movieNamesOfDirector = new ArrayList<>();
+            movieNamesOfDirector.add(movieName);
+            pairs.put(directorName,movieNamesOfDirector);
+            return;
         }
-        else hm2.put(mName,mList);
+        List<String> movieNamesOfDirector = pairs.get(directorName);
+        movieNamesOfDirector.add(movieName);
+        pairs.put(directorName,movieNamesOfDirector);
+    }
 
-        if(hm2.containsKey(dName))
-        {
-            hm2.get(dName).add(mName);
+    public Movie getMovieByName(String movieName) {
+        return moviesDB.get(movieName);
+    }
+
+    public Director getDirectorByName(String directorName) {
+        return directorsDB.get(directorName);
+    }
+
+    public List<String> getMoviesByDirectorName(String directorName) {
+        return pairs.get(directorName);
+    }
+
+    public List<String> findAllMovies() {
+        List<String> allMovieNames = new ArrayList<>();
+        for (String movieName : moviesDB.keySet()){
+            allMovieNames.add(movieName);
         }
-        else hm2.put(dName,dList);
-
-    }
-    public Movie getMovieByName(String name) {
-        return hm.get(name);
+        return allMovieNames;
     }
 
-    public Director getDirectorByName(String name) {
-        return hm1.get(name);
-    }
-
-    public List getMoviesByDirectorName(String dName) {
-        return hm2.get(dName);
-    }
-
-    public List findAllMovies() {
-        List<String> list = new ArrayList<>();
-        for(String mName : hm.keySet())
-        {
-            list.add(mName);
+    public void deleteDirectorByName(String directorName) {
+        List<String> allMoviesByDirector = pairs.get(directorName);
+        for (String movieName : allMoviesByDirector){
+            moviesDB.remove(movieName);
         }
-        return list;
-    }
-
-    public void deleteDirectorByName(String dName) {
-        List<String> list = hm2.get(dName);
-        for(String mo : list)
-        {
-            List<String> list1 = hm2.get(mo);
-            list1.remove(dName);
-            if(list1.isEmpty())
-            {
-                hm2.remove(mo);
-            }
-        }
-        hm2.remove(dName);
+        pairs.remove(directorName);
     }
 
     public void deleteAllDirectors() {
-        hm.clear();
-        hm1.clear();
+        for(String directorName : pairs.keySet()){
+            deleteDirectorByName(directorName);
+        }
+    }
+
+    public class Pair{
+        Movie movie;
+        Director director;
+
+        public Pair(Movie movie, Director director) {
+            this.movie = movie;
+            this.director = director;
+        }
     }
 }
